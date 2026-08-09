@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remittance Pricing Calculator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500;700&display=swap');
+
+        :root {
+            --c-navy: #0B1628;
+            --c-cyan: #00C2FF;
+            --c-blue: #1D4ED8;
+            --c-teal: #0891B2;
+            --c-purple: #6D28D9;
+            --c-green: #15803D;
+            --c-green-bg: #F0FDF4;
+            --c-amber: #D97706;
+            --c-bg: #F1F4F8;
+            --c-white: #FFFFFF;
+            --c-text: #1F2937;
+            --c-text-muted: #6B7280;
+            --c-border: #E5E7EB;
+            --font-ui: 'DM Sans', sans-serif;
+            --font-num: 'DM Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--c-bg);
+            color: var(--c-text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: var(--c-navy);
+            color: var(--c-white);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header svg {
+            color: var(--c-cyan);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-white);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-white);
+            box-shadow: inset 0 0 0 1px rgba(0, 194, 255, 0.3);
+        }
+
+        .mode-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rate-readout {
+            font-family: var(--font-num);
+            font-size: 14px;
+            color: var(--c-white);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .rate-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* Work Area */
+        .work-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .topbar {
+            height: 64px;
+            background: var(--c-white);
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .topbar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--c-navy);
+        }
+
+        .topbar-chip {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 99px;
+            letter-spacing: 0.05em;
+        }
+
+        .content-grid {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            overflow: hidden;
+            width: 100%;
+            height: calc(100vh - 64px);
+        }
+
+        .settings-grid-layout {
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            overflow-y: auto;
+            width: 100%;
+            height: calc(100vh - 64px);
+            align-items: start;
+        }
+
+        @media (min-width: 1024px) {
+            .settings-grid-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--c-white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--c-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .card-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--c-navy);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0;
+            border: none;
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 0;
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--c-text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--c-border);
+            border-radius: 8px;
+            font-family: var(--font-num);
+            font-size: 15px;
+            color: var(--c-text);
+            box-sizing: border-box;
+            transition: outline 0.2s, border-color 0.2s;
+            outline: none;
+        }
+
+        .input-group select {
+            font-family: inherit;
+        }
+
+        .input-group select:focus,
+        .input-group input:focus {
+            border-color: var(--c-cyan);
+        }
+
+        .input-group input:disabled {
+            background-color: var(--c-bg);
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+        }
+
+        /* Results Layout */
+        .results-card .card-body {
+            position: relative;
+        }
+
+        .state-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--c-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #9CA3AF;
+            z-index: 2;
+        }
+
+        .state-layer svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            color: currentColor;
+        }
+
+        .state-layer h3 {
+            display: none;
+        }
+
+        .state-layer p {
+            font-size: 16px;
+            color: inherit;
+        }
+
+        .error-layer {
+            top: 0; bottom: auto;
+            background: #FEF2F2;
+            color: #DC2626;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            height: auto;
+            z-index: 3;
+        }
+        
+        .error-layer svg { display: none; }
+        .error-layer p { font-size: inherit; margin: 0; }
+
+        #results-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-block {
+            text-align: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #F3F4F6;
+            margin-bottom: 20px;
+            background: transparent;
+            border-radius: 0;
+        }
+
+        .hero-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--c-text-muted);
+            margin-bottom: 8px;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .hero-value {
+            font-family: var(--font-num);
+            font-size: 40px;
+            font-weight: 500;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .hero-note {
+            font-size: 12px;
+            color: var(--c-text-muted);
+            margin-top: 12px;
+            display: inline-block;
+            background: transparent;
+            padding: 0;
+            font-style: italic;
+        }
+
+        .secondary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: auto;
+        }
+
+        .sec-tile {
+            background: #F9FAFB;
+            padding: 16px;
+            border-radius: 8px;
+            border: none;
+        }
+
+        .sec-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--c-text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            letter-spacing: normal;
+        }
+
+        .sec-value {
+            font-family: var(--font-num);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .profit-bar {
+            margin-top: 20px;
+            background: var(--c-green-bg);
+            color: var(--c-green);
+            border-radius: 8px;
+            border: none;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .profit-label {
+            font-weight: 600;
+            font-size: 16px;
+            color: inherit;
+        }
+
+        .profit-value {
+            font-family: var(--font-num);
+            font-size: 16px;
+            color: inherit;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .anim-value {
+            display: block;
+        }
+
+        .anim-trigger {
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 16px;
+            }
+            .sidebar-header {
+                width: 100%;
+                margin-bottom: 16px;
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                overflow-x: auto;
+                width: 100%;
+                gap: 8px;
+            }
+            .nav-item {
+                white-space: nowrap;
+                padding: 8px 16px;
+                border-radius: 4px 4px 0 0;
+            }
+            .nav-item.active {
+                box-shadow: inset 0 -3px 0 0 rgba(0, 194, 255, 1);
+            }
+            .mode-description {
+                display: none;
+            }
+            .sidebar-footer {
+                display: none;
+            }
+            .content-grid, .settings-grid-layout {
+                padding: 16px;
+            }
+            .topbar {
+                padding: 16px;
+            }
+            .hero-value {
+                font-size: 2rem;
+            }
+            .secondary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--c-cyan)"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            FX Remito Pro
+        </div>
+        
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-mode="1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Receive Amount
+            </button>
+            <button class="nav-item" data-mode="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Send Amount
+            </button>
+            <button class="nav-item" data-mode="3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                USD Payment
+            </button>
+            <button class="nav-item" data-mode="4">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings & Rates
+            </button>
+            <div class="mode-description" id="sidebar-desc">
+                The agent knows how many USD the beneficiary should receive. Calculate what CAD to collect.
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="rate-label">TD High Rate</div>
+            <div class="rate-readout" id="sidebar-rate">1 USD = -- CAD</div>
+        </div>
+    </aside>
+
+    <main class="work-area">
+        <header class="topbar">
+            <div class="topbar-title" id="topbar-title">Forward</div>
+            <div class="topbar-chip" id="topbar-chip" style="background: #DBEAFE; color: #1D4ED8;">USD to CAD</div>
+        </header>
+
+        <div class="content-grid" id="calc-grid">
+            
+            <!-- Inputs Card -->
+            <div class="card inputs-card">
+                <div class="card-header">Pricing Inputs</div>
+                <div class="card-body">
+                    
+                    <div class="input-group">
+                        <label for="country-input">Destination Country</label>
+                        <select id="country-input" onchange="toggleSyriaFields()">
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="syria-currency-container" style="display: none;">
+                        <label for="syria-currency-input">Receive Currency</label>
+                        <select id="syria-currency-input" onchange="toggleSyriaFields()">
+                            <option value="USD">USD</option>
+                            <option value="SYP">SYP</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="syria-city-container" style="display: none;">
+                        <label for="syria-city-input">City</label>
+                        <select id="syria-city-input" onchange="calculate()">
+                            <option value="دمشق( مرجة )">دمشق( مرجة )</option>
+                            <option value="دمشق ( سمان )">دمشق ( سمان )</option>
+                            <option value="حلب">حلب</option>
+                            <option value="حماة">حماة</option>
+                            <option value="حمص">حمص</option>
+                            <option value="درعا">درعا</option>
+                            <option value="اللاذقية">اللاذقية</option>
+                            <option value="طرطوس">طرطوس</option>
+                            <option value="الهرم">الهرم</option>
+                            <option value="شام كاش">شام كاش</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="rate-container">
+                        <label for="rate-input">USD → CAD Rate</label>
+                        <input type="number" id="rate-input" placeholder="e.g. 1.365" step="0.001" min="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="amount-input" id="amount-label">Beneficiary Receives (USD)</label>
+                        <input type="number" id="amount-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div class="card results-card">
+                <div class="card-header">Calculation Results</div>
+                <div class="card-body">
+                    
+                    <!-- Empty State -->
+                    <div class="state-layer" id="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9h20"/></svg>
+                        <h3>Ready to calculate</h3>
+                        <p>Enter destination, amount, and rate on the left to see live pricing.</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="state-layer error-layer" id="error-state" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        <h3>Calculation Error</h3>
+                        <p id="error-message">Could not solve — check your inputs.</p>
+                    </div>
+
+                    <!-- Live Results -->
+                    <div id="results-content" style="display: none;">
+                        
+                        <div class="hero-block">
+                            <div class="hero-label" id="hero-label">Collect from Customer (CAD)</div>
+                            <div class="hero-value anim-value" id="hero-value">--</div>
+                            <div class="hero-note anim-value" id="hero-note" style="display: none;"></div>
+                        </div>
+
+                        <div class="secondary-grid">
+                            <div class="sec-tile" id="sec1-tile">
+                                <div class="sec-label" id="sec1-label">Beneficiary Receives</div>
+                                <div class="sec-value anim-value" id="sec1-value" style="color: var(--c-green)">--</div>
+                            </div>
+                            <div class="sec-tile" id="sec2-tile">
+                                <div class="sec-label" id="sec2-label">Agent Fee</div>
+                                <div class="sec-value anim-value" id="sec2-value" style="color: var(--c-amber)">--</div>
+                            </div>
+                            <div class="sec-tile" id="sec3-tile" style="display: none;">
+                                <div class="sec-label" id="sec3-label">Customer Fee</div>
+                                <div class="sec-value anim-value" id="sec3-value" style="color: var(--c-blue)">--</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="settings-grid-layout" id="settings-grid" style="display: none;">
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="card">
+                    <div class="card-header">Live Market Data</div>
+                    <div class="card-body">
+                        <div class="hero-block">
+                            <div class="hero-label">CAD/USD Spot Rate (Market)</div>
+                            <div class="hero-value anim-value" id="spot-rate-value">--</div>
+                            <div class="hero-note" id="spot-rate-note">Fetching...</div>
+                        </div>
+                        <button style="width:100%; padding: 12px; background: var(--c-navy); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px;" onclick="fetchSpotRate()">Refresh Live Rate</button>
+                        <p style="font-size: 12px; color: var(--c-text-muted); text-align: center; margin-top: 12px;">Applies to calculations when you copy it to the rate input.</p>
+                    </div>
+                </div>
+
+                <div class="card" id="syria-settings-card" style="display: none;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        Syria SYP Daily Rates
+                        <button style="padding: 6px 12px; background: var(--c-teal); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="updateSyriaRatesToday()">Update Today</button>
+                    </div>
+                    <div class="card-body" style="gap: 16px; padding-bottom: 24px;">
+                        <div id="syria-rates-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button style="flex: 1; padding: 12px; background: var(--c-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="saveSyriaRates()">Save SYP Rates</button>
+                        </div>
+                        <div id="syria-settings-msg" style="font-size: 12px; color: var(--c-green); text-align: center; font-weight: 600; min-height: 18px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Pricing & Fees Configuration</div>
+                <div class="card-body" style="gap: 16px; padding-bottom: 24px;">
+                    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <label>Destination Country</label>
+                            <select id="settings-country" onchange="populateSettingsForm()">
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button style="padding: 12px; background: var(--c-cyan); color: var(--c-navy); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; height: 44px; display: flex; align-items: center;" onclick="addNewCountry()">+ Add</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                        <div class="input-group" style="margin-bottom:0">
+                            <label>Fwd/Rev %</label>
+                            <input type="number" id="set-pctRate" placeholder="e.g. 3">
+                        </div>
+                        <div class="input-group" style="margin-bottom:0">
+                            <label>USD Pay %</label>
+                            <input type="number" id="set-usdPayPct" placeholder="e.g. 4">
+                        </div>
+                        <div class="input-group" style="margin-bottom:0">
+                            <label>Agent Fee %</label>
+                            <input type="number" id="set-feePct" placeholder="e.g. 0.7">
+                        </div>
+                    </div>
+
+                    <label style="font-size: 12px; font-weight: 600; color: var(--c-text-muted); margin-top: 4px; display: block;">Collection Tiers (Max USD → Add CAD)</label>
+                    <div id="set-tiers-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+
+                    <label style="font-size: 12px; font-weight: 600; color: var(--c-text-muted); margin-top: 4px; display: block;">Agent Fee Tiers (Max USD → Fee USD)</label>
+                    <div id="set-fees-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button style="flex: 1; padding: 12px; background: var(--c-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="saveCountrySettings()">Save Changes</button>
+                        <button style="flex: 1; padding: 12px; background: #F3F4F6; color: var(--c-text); border: 1px solid var(--c-border); border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="resetPricing()">Reset Default</button>
+                    </div>
+                    <div id="settings-msg" style="font-size: 12px; color: var(--c-green); text-align: center; font-weight: 600; min-height: 18px;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Data Model ---
+        const DEFAULT_SYRIA_RATES = {
+            lastUpdated: "",
+            cities: {
+                "دمشق( مرجة )": { usdSyp: 129.50, cadSyp: 86.30 },
+                "دمشق ( سمان )": { usdSyp: 129.50, cadSyp: 86.30 },
+                "حلب": { usdSyp: 129.50, cadSyp: 86.30 },
+                "حماة": { usdSyp: 129.50, cadSyp: 86.30 },
+                "حمص": { usdSyp: 129.00, cadSyp: 86.00 },
+                "درعا": { usdSyp: 129.00, cadSyp: 86.00 },
+                "اللاذقية": { usdSyp: 129.00, cadSyp: 86.00 },
+                "طرطوس": { usdSyp: 129.00, cadSyp: 86.00 },
+                "الهرم": { usdSyp: 128.50, cadSyp: 85.70 },
+                "شام كاش": { usdSyp: 128.50, cadSyp: 85.70 }
+            }
+        };
+
+        let SYRIA_RATES = null;
+        try {
+            const stored = localStorage.getItem('syria_rates');
+            if (stored) SYRIA_RATES = JSON.parse(stored);
+        } catch(e) {}
+        if (!SYRIA_RATES) {
+            SYRIA_RATES = JSON.parse(JSON.stringify(DEFAULT_SYRIA_RATES));
+        }
+
+        const DEFAULT_PRICING = {
+            "Syria": {
+                tiers: [{ max: 400, add: 15 }, { max: 700, add: 20 }],
+                pctRate: 0.03, usdPayPct: 0.04,
+                fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }],
+                feePct: 0.007
+            },
+            "Lebanon": {
+                tiers: [{ max: 650, add: 20 }],
+                pctRate: 0.03, usdPayPct: 0.04,
+                fees: [{ max: 2500, amount: 5 }],
+                feePct: 0.002
+            },
+            "Lebanon OMT": {
+                tiers: [{ max: 700, add: 25 }],
+                pctRate: 0.035, usdPayPct: 0.045,
+                fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }, { max: 1500, amount: 10 }, { max: 2000, amount: 12 }],
+                feePct: 0.007
+            },
+            "Gazah": {
+                tiers: [{ max: 800, add: 20 }],
+                pctRate: 0.025, usdPayPct: 0.035,
+                fees: [{ max: 1000, amount: 7 }],
+                feePct: 0.007
+            },
+            "Dafeh": {
+                tiers: [{ max: 650, add: 20 }],
+                pctRate: 0.03, usdPayPct: 0.04,
+                fees: [{ max: 2500, amount: 10 }],
+                feePct: 0.004
+            },
+            "Turkey": {
+                tiers: [{ max: 800, add: 20 }],
+                pctRate: 0.025, usdPayPct: 0.035,
+                fees: [{ max: 2500, amount: 5 }],
+                feePct: 0.002
+            },
+            "Iraq": {
+                tiers: [{ max: 800, add: 20 }],
+                pctRate: 0.025, usdPayPct: 0.035,
+                fees: [{ max: 2500, amount: 5 }],
+                feePct: 0.002
+            },
+            "Egypt": {
+                tiers: [{ max: 500, add: 20 }],
+                pctRate: 0.04, usdPayPct: 0.05,
+                fees: [{ max: 1000, amount: 7 }],
+                feePct: 0.007
+            },
+            "Jordan": null
+        };
+
+        let PRICING = null;
+        try {
+            const stored = localStorage.getItem('fx_pricing');
+            if (stored) PRICING = JSON.parse(stored);
+        } catch(e) {}
+        if (!PRICING) {
+            PRICING = JSON.parse(JSON.stringify(DEFAULT_PRICING));
+        }
+
+        // --- Math Functions ---
+        function collectCAD(country, usdAmount, rate) {
+            let p = PRICING[country];
+            if (!p) return null;
+            for (let tier of p.tiers) {
+                if (usdAmount <= tier.max) {
+                    return { val: rate * (usdAmount + tier.add), note: null };
+                }
+            }
+            return { val: rate * usdAmount * (1 + p.pctRate), note: null };
+        }
+
+        function collectUSD(country, usdAmount) {
+            let p = PRICING[country];
+            if (!p) return null;
+            for (let tier of p.tiers) {
+                if (usdAmount <= tier.max) {
+                    return { val: usdAmount + tier.add, note: "Fixed-fee tier — no surcharge applied" };
+                }
+            }
+            return { val: usdAmount * (1 + p.usdPayPct), note: "+1% surcharge applied on percentage tier" };
+        }
+
+        function agentFeeUSD(country, usdAmount) {
+            let p = PRICING[country];
+            if (!p) return null;
+            for (let feeTier of p.fees) {
+                if (usdAmount <= feeTier.max) return feeTier.amount;
+            }
+            return usdAmount * p.feePct;
+        }
+
+        function reverseUSD(country, cadAmount, rate) {
+            let p = PRICING[country];
+            if (!p) return null;
+            let prevMax = -Infinity;
+            // Test fixed tiers algebraically
+            for (let tier of p.tiers) {
+                let candidate = (cadAmount / rate) - tier.add;
+                if (candidate > prevMax && candidate <= tier.max) {
+                    return candidate;
+                }
+                prevMax = tier.max;
+            }
+            // Test percentage tier
+            let candidate = cadAmount / (rate * (1 + p.pctRate));
+            if (candidate > prevMax) return candidate;
+            
+            return null; // Unsolvable
+        }
+
+        // --- Formatting & UI Helpers ---
+        function formatMoney(amount, currencyCode) {
+            const fractionDigits = currencyCode === 'SYP' ? 0 : 2;
+            return currencyCode + ' ' + amount.toLocaleString('en-CA', { 
+                minimumFractionDigits: fractionDigits, 
+                maximumFractionDigits: fractionDigits 
+            });
+        }
+
+        function triggerAnim(el) {
+            el.classList.remove('anim-trigger');
+            void el.offsetWidth; // force reflow
+            el.classList.add('anim-trigger');
+        }
+
+        // --- Global State ---
+        let currentMode = 1;
+
+        // --- Main Logic ---
+        function toggleSyriaFields() {
+            const country = document.getElementById('country-input').value;
+            const currencyContainer = document.getElementById('syria-currency-container');
+            const cityContainer = document.getElementById('syria-city-container');
+            const rateContainer = document.getElementById('rate-container');
+
+            if (country === 'Syria') {
+                currencyContainer.style.display = 'block';
+                const currency = document.getElementById('syria-currency-input').value;
+                if (currency === 'SYP') {
+                    cityContainer.style.display = 'block';
+                    rateContainer.style.display = 'none';
+                } else {
+                    cityContainer.style.display = 'none';
+                    rateContainer.style.display = 'block';
+                }
+            } else {
+                currencyContainer.style.display = 'none';
+                cityContainer.style.display = 'none';
+                rateContainer.style.display = 'block';
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const country = document.getElementById('country-input').value;
+            const rateStr = document.getElementById('rate-input').value;
+            const amountStr = document.getElementById('amount-input').value;
+            const syriaCurrency = document.getElementById('syria-currency-container').style.display !== 'none' ? document.getElementById('syria-currency-input').value : null;
+            const syriaCity = document.getElementById('syria-city-input').value;
+            
+            const rate = parseFloat(rateStr);
+            const amount = parseFloat(amountStr);
+
+            const emptyState = document.getElementById('empty-state');
+            const errorState = document.getElementById('error-state');
+            const resultsContent = document.getElementById('results-content');
+            const errorMsg = document.getElementById('error-message');
+
+            const isSyriaSYP = (country === 'Syria' && syriaCurrency === 'SYP');
+            const isJordan = (country.toLowerCase() === 'jordan');
+
+            // Update dynamic labels based on country
+            const amountLabel = document.getElementById('amount-label');
+            const topbarChip = document.getElementById('topbar-chip');
+
+            if (currentMode === 1) {
+                if (isSyriaSYP) {
+                    amountLabel.innerText = "Beneficiary Receives (SYP)";
+                    topbarChip.innerText = "SYP to CAD";
+                } else {
+                    amountLabel.innerText = isJordan ? "Beneficiary Receives (JOD)" : "Beneficiary Receives (USD)";
+                    topbarChip.innerText = isJordan ? "JOD to CAD" : "USD to CAD";
+                }
+            } else if (currentMode === 2) {
+                amountLabel.innerText = "Customer Pays (CAD)";
+                if (isSyriaSYP) {
+                    topbarChip.innerText = "CAD to SYP";
+                } else {
+                    topbarChip.innerText = isJordan ? "CAD to JOD" : "CAD to USD";
+                }
+            } else if (currentMode === 3) {
+                if (isSyriaSYP) {
+                    amountLabel.innerText = "Beneficiary Receives (SYP)";
+                    topbarChip.innerText = "SYP Only";
+                } else {
+                    amountLabel.innerText = isJordan ? "Beneficiary Receives (JOD)" : "Beneficiary Receives (USD)";
+                    topbarChip.innerText = isJordan ? "JOD Only" : "USD Only";
+                }
+            }
+
+            // Validation for empty state
+            const missingAmount = isNaN(amount) || amount <= 0;
+            const missingRate = (!isSyriaSYP && currentMode !== 3) && (isNaN(rate) || rate <= 0);
+
+            if (missingAmount || missingRate) {
+                emptyState.style.display = 'flex';
+                errorState.style.display = 'none';
+                resultsContent.style.display = 'none';
+                return;
+            }
+
+            // Check if configured
+            if (!PRICING[country] && !isSyriaSYP) {
+                emptyState.style.display = 'none';
+                errorState.style.display = 'flex';
+                resultsContent.style.display = 'none';
+                errorMsg.innerText = "No pricing rules configured for this country yet.";
+                return;
+            }
+
+            // Calculations based on mode
+            let heroVal, heroLabel, sec1Val, sec1Label, sec2Val, profitVal, note, heroColor;
+            let fee, profit;
+            let customerFeeVal = null;
+
+            if (isSyriaSYP) {
+                // Check if rates updated today
+                const today = new Date().toLocaleDateString('en-CA');
+                if (SYRIA_RATES.lastUpdated !== today) {
+                    emptyState.style.display = 'none';
+                    errorState.style.display = 'flex';
+                    resultsContent.style.display = 'none';
+                    errorMsg.innerText = "SYP rates not updated today! Please go to Settings and click 'Update Today' to verify rates.";
+                    return;
+                }
+
+                if (currentMode === 3) {
+                    emptyState.style.display = 'none';
+                    errorState.style.display = 'flex';
+                    resultsContent.style.display = 'none';
+                    errorMsg.innerText = "USD Payment mode is not applicable when converting to SYP. Please use a CAD mode.";
+                    return;
+                }
+
+                const cityRates = SYRIA_RATES.cities[syriaCity];
+                if (!cityRates || !cityRates.cadSyp || !cityRates.usdSyp) {
+                    emptyState.style.display = 'none';
+                    errorState.style.display = 'flex';
+                    resultsContent.style.display = 'none';
+                    errorMsg.innerText = "Rates not found for the selected city.";
+                    return;
+                }
+
+                if (currentMode === 1) { // SYP to CAD (Beneficiary receives amount)
+                    let sypReceived = amount;
+                    let cadNet = sypReceived / cityRates.cadSyp;
+                    let customerFee = 0;
+                    if (cadNet < 500) {
+                        customerFee = 10;
+                    }
+                    let cadPaid = Math.ceil(cadNet + customerFee);
+
+                    let agentUsd = sypReceived / cityRates.usdSyp;
+                    fee = 5;
+                    customerFeeVal = customerFee;
+                    
+                    let marketRate = rate || parseFloat(document.getElementById('rate-input').value) || 1.36;
+                    
+                    profit = cadPaid - ((agentUsd + fee) * marketRate);
+
+                    heroLabel = "Collect from Customer";
+                    heroVal = formatMoney(cadPaid, 'CAD');
+                    sec1Label = "Beneficiary Receives";
+                    sec1Val = sypReceived.toLocaleString('en-CA', { maximumFractionDigits: 0 }) + " SYP";
+                    profitVal = formatMoney(profit, 'CAD');
+                    heroColor = 'var(--c-blue)';
+                    note = customerFee > 0 ? "Customer Fees Applied: $10 CAD" : "Customer Fees Applied: $0 CAD";
+                }
+                else if (currentMode === 2) { // CAD to SYP (Customer pays amount)
+                    let cadPaid = amount;
+                    let customerFee = (cadPaid >= 500) ? 0 : 10;
+                    let cadNet = cadPaid - customerFee;
+                    
+                    if (cadNet <= 0) {
+                        emptyState.style.display = 'none';
+                        errorState.style.display = 'flex';
+                        resultsContent.style.display = 'none';
+                        errorMsg.innerText = "Amount too small to cover fees.";
+                        return;
+                    }
+
+                    let sypReceived = Math.floor(cadNet * cityRates.cadSyp);
+                    let agentUsd = sypReceived / cityRates.usdSyp;
+                    fee = 5;
+                    customerFeeVal = customerFee;
+                    
+                    let marketRate = rate || parseFloat(document.getElementById('rate-input').value) || 1.36;
+                    profit = cadPaid - ((agentUsd + fee) * marketRate);
+
+                    heroLabel = "Beneficiary Receives";
+                    heroVal = sypReceived.toLocaleString('en-CA', { maximumFractionDigits: 0 }) + " SYP";
+                    sec1Label = "Customer Pays";
+                    sec1Val = formatMoney(cadPaid, 'CAD');
+                    profitVal = formatMoney(profit, 'CAD');
+                    heroColor = 'var(--c-purple)';
+                    note = customerFee > 0 ? "Customer Fees Applied: $10 CAD" : "Customer Fees Applied: $0 CAD";
+                }
+            }
+            else if (isJordan && currentMode === 1) { // Forward
+                let jodAmount = amount;
+                let usdNet = jodAmount * 1.4135;
+                let usdAmountRaw = (usdNet <= 630) ? (usdNet + 20) : (usdNet * 1.03);
+                let cadPaid = usdAmountRaw * rate;
+                cadPaid = Math.ceil(cadPaid);
+
+                fee = agentFeeUSD(country, usdAmountRaw);
+                profit = cadPaid - (usdNet * rate) - (fee * rate);
+
+                heroLabel = "Collect from Customer";
+                heroVal = formatMoney(cadPaid, 'CAD');
+                sec1Label = "Beneficiary Receives";
+                sec1Val = formatMoney(jodAmount, 'JOD');
+                profitVal = formatMoney(profit, 'CAD');
+                heroColor = 'var(--c-blue)';
+                note = (usdNet <= 630) ? "+$20 fee applied" : "+3% fee applied";
+            }
+            else if (isJordan && currentMode === 2) { // Reverse
+                let cadPaid = amount;
+                let usdAmountRaw = cadPaid / rate;
+                
+                let usdNet;
+                if (usdAmountRaw <= 650) {
+                    usdNet = usdAmountRaw - 20;
+                    note = "-$20 fee applied";
+                } else {
+                    usdNet = usdAmountRaw / 1.03;
+                    note = "-3% fee applied";
+                }
+                
+                if (usdNet <= 0) {
+                    emptyState.style.display = 'none';
+                    errorState.style.display = 'flex';
+                    resultsContent.style.display = 'none';
+                    errorMsg.innerText = "Could not solve — check your inputs. Amount may be too small to cover fees.";
+                    return;
+                }
+
+                let jodAmount = usdNet / 1.4135;
+                jodAmount = Math.ceil(jodAmount);
+
+                // Recalculate profit using exact JOD received
+                fee = agentFeeUSD(country, usdAmountRaw);
+                profit = cadPaid - ((jodAmount * 1.4135) * rate) - (fee * rate);
+
+                heroLabel = "Beneficiary Receives";
+                heroVal = formatMoney(jodAmount, 'JOD');
+                sec1Label = "Customer Pays";
+                sec1Val = formatMoney(cadPaid, 'CAD');
+                profitVal = formatMoney(profit, 'CAD');
+                heroColor = 'var(--c-purple)';
+            }
+            else if (isJordan && currentMode === 3) { // USD Payment
+                let jodAmount = amount;
+                let usdNet = jodAmount * 1.4135;
+                let usdAmountRaw = (usdNet <= 630) ? (usdNet + 20) : (usdNet * 1.03);
+                usdAmountRaw = Math.ceil(usdAmountRaw);
+
+                fee = agentFeeUSD(country, usdAmountRaw);
+                profit = usdAmountRaw - usdNet - fee;
+
+                heroLabel = "Collect from Customer";
+                heroVal = formatMoney(usdAmountRaw, 'USD');
+                sec1Label = "Beneficiary Receives";
+                sec1Val = formatMoney(jodAmount, 'JOD');
+                profitVal = formatMoney(profit, 'USD');
+                heroColor = 'var(--c-teal)';
+                note = (usdNet <= 630) ? "+$20 fee applied" : "+3% fee applied";
+            }
+            else if (currentMode === 1) { // Forward
+                let usdAmount = amount;
+                let collect = collectCAD(country, usdAmount, rate);
+                collect.val = Math.ceil(collect.val);
+                fee = agentFeeUSD(country, usdAmount);
+                profit = collect.val - (usdAmount * rate) - (fee * rate);
+
+                heroLabel = "Collect from Customer";
+                heroVal = formatMoney(collect.val, 'CAD');
+                sec1Label = "Beneficiary Receives";
+                sec1Val = formatMoney(usdAmount, 'USD');
+                profitVal = formatMoney(profit, 'CAD');
+                heroColor = 'var(--c-blue)';
+                note = null;
+            } 
+            else if (currentMode === 2) { // Reverse
+                let cadPaid = amount;
+                let usdAmount = reverseUSD(country, cadPaid, rate);
+                
+                if (usdAmount === null || usdAmount <= 0) {
+                    emptyState.style.display = 'none';
+                    errorState.style.display = 'flex';
+                    resultsContent.style.display = 'none';
+                    errorMsg.innerText = "Could not solve — check your inputs. Amount may be too small to cover fees.";
+                    return;
+                }
+
+                usdAmount = Math.ceil(usdAmount);
+
+                fee = agentFeeUSD(country, usdAmount);
+                profit = cadPaid - (usdAmount * rate) - (fee * rate);
+
+                heroLabel = "Beneficiary Receives";
+                heroVal = formatMoney(usdAmount, 'USD');
+                sec1Label = "Customer Pays";
+                sec1Val = formatMoney(cadPaid, 'CAD');
+                profitVal = formatMoney(profit, 'CAD');
+                heroColor = 'var(--c-purple)';
+                note = null;
+            }
+            else if (currentMode === 3) { // USD Payment
+                let usdAmount = amount;
+                let collect = collectUSD(country, usdAmount);
+                collect.val = Math.ceil(collect.val);
+                fee = agentFeeUSD(country, usdAmount);
+                profit = collect.val - usdAmount - fee;
+
+                heroLabel = "Collect from Customer";
+                heroVal = formatMoney(collect.val, 'USD');
+                sec1Label = "Beneficiary Receives";
+                sec1Val = formatMoney(usdAmount, 'USD');
+                profitVal = formatMoney(profit, 'USD');
+                heroColor = 'var(--c-teal)';
+                note = collect.note;
+            }
+
+            // Render
+            emptyState.style.display = 'none';
+            errorState.style.display = 'none';
+            resultsContent.style.display = 'flex';
+
+            const heroLabelEl = document.getElementById('hero-label');
+            const heroValueEl = document.getElementById('hero-value');
+            const heroNoteEl = document.getElementById('hero-note');
+            const sec1LabelEl = document.getElementById('sec1-label');
+            const sec1ValueEl = document.getElementById('sec1-value');
+            const sec2ValueEl = document.getElementById('sec2-value');
+            const sec3ValueEl = document.getElementById('sec3-value');
+            const sec3TileEl = document.getElementById('sec3-tile');
+            const profitValueEl = document.getElementById('profit-value');
+
+            // Set content
+            heroLabelEl.innerText = heroLabel;
+            heroValueEl.innerText = heroVal;
+            heroValueEl.style.color = heroColor;
+            
+            sec1LabelEl.innerText = sec1Label;
+            sec1ValueEl.innerText = sec1Val;
+            
+            sec2ValueEl.innerText = formatMoney(fee, 'USD');
+
+            if (customerFeeVal !== null) {
+                sec3ValueEl.innerText = formatMoney(customerFeeVal, 'CAD');
+                sec3TileEl.style.display = 'block';
+            } else {
+                sec3TileEl.style.display = 'none';
+            }
+
+            profitValueEl.innerText = profitVal;
+
+            if (note) {
+                heroNoteEl.innerText = note;
+                heroNoteEl.style.display = 'inline-block';
+            } else {
+                heroNoteEl.style.display = 'none';
+            }
+
+            // Trigger animations
+            document.querySelectorAll('.anim-value').forEach(triggerAnim);
+        }
+
+        // --- Event Listeners ---
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // UI Updates for Mode Switching
+            document.querySelectorAll('.nav-item').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.mode) === mode);
+            });
+
+            const amountLabel = document.getElementById('amount-label');
+            const rateContainer = document.getElementById('rate-container');
+            const rateInput = document.getElementById('rate-input');
+            const topbarTitle = document.getElementById('topbar-title');
+            const topbarChip = document.getElementById('topbar-chip');
+            const sidebarDesc = document.getElementById('sidebar-desc');
+            const amountInput = document.getElementById('amount-input');
+
+            // Clear amount field on mode switch
+            if (amountInput) amountInput.value = '';
+
+            const calcGrid = document.getElementById('calc-grid');
+            const settingsGrid = document.getElementById('settings-grid');
+
+            if (mode === 4) {
+                calcGrid.style.display = 'none';
+                settingsGrid.style.display = 'grid';
+                topbarTitle.innerText = "Settings & Market Rates";
+                topbarChip.innerText = "Configuration";
+                topbarChip.style.backgroundColor = "#F1F5F9";
+                topbarChip.style.color = "#475569";
+                sidebarDesc.innerText = "Configure pricing tiers, margins, and fetch live CAD/USD spot rates.";
+                
+                populateSettingsForm();
+                if (document.getElementById('spot-rate-value').innerText === '--') {
+                    fetchSpotRate();
+                }
+                return;
+            } else {
+                calcGrid.style.display = 'grid';
+                settingsGrid.style.display = 'none';
+            }
+
+            if (mode === 1) {
+                amountLabel.innerText = "Beneficiary Receives (USD)";
+                rateContainer.style.opacity = "1";
+                rateInput.disabled = false;
+                topbarTitle.innerText = "Forward";
+                topbarChip.innerText = "USD to CAD";
+                topbarChip.style.backgroundColor = "#DBEAFE";
+                topbarChip.style.color = "#1D4ED8";
+                sidebarDesc.innerText = "The agent knows how many USD the beneficiary should receive. Calculate what CAD to collect.";
+            } else if (mode === 2) {
+                amountLabel.innerText = "Customer Pays (CAD)";
+                rateContainer.style.opacity = "1";
+                rateInput.disabled = false;
+                topbarTitle.innerText = "Reverse";
+                topbarChip.innerText = "CAD to USD";
+                topbarChip.style.backgroundColor = "#F3E8FF";
+                topbarChip.style.color = "#6D28D9";
+                sidebarDesc.innerText = "The customer is handing a fixed CAD amount. Calculate what USD the beneficiary receives.";
+            } else if (mode === 3) {
+                amountLabel.innerText = "Beneficiary Receives (USD)";
+                rateContainer.style.opacity = "0.4"; // Gray out instead of hiding to prevent layout shift
+                rateInput.disabled = true;
+                topbarTitle.innerText = "USD Payment";
+                topbarChip.innerText = "USD Only";
+                topbarChip.style.backgroundColor = "#CCFBF1";
+                topbarChip.style.color = "#0F766E";
+                sidebarDesc.innerText = "The customer pays in USD. Calculate the total USD to collect, including +1% surcharge.";
+            }
+
+            calculate();
+            amountInput.focus();
+        }
+
+        // Attach listeners
+        document.getElementById('country-input').addEventListener('input', calculate);
+        document.getElementById('rate-input').addEventListener('input', calculate);
+        document.getElementById('amount-input').addEventListener('input', calculate);
+
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                setMode(parseInt(e.currentTarget.dataset.mode));
+            });
+        });
+
+        // Initial setup
+        populateCountrySelects();
+        setMode(1);
+
+        // Fetch TD High Rate on load
+        fetch('https://open.er-api.com/v6/latest/USD')
+            .then(res => res.json())
+            .then(data => {
+                const liveRate = data.rates.CAD;
+                const tdHighRate = liveRate + 0.03;
+                
+                document.getElementById('sidebar-rate').innerText = `1 USD = ${tdHighRate.toFixed(4)} CAD`;
+                
+                const rateInput = document.getElementById('rate-input');
+                if (!rateInput.value) {
+                    rateInput.value = tdHighRate.toFixed(4);
+                    calculate();
+                }
+            })
+            .catch(err => console.error("Could not fetch live rate on load:", err));
+
+        // --- Settings Logic ---
+        function populateCountrySelects() {
+            const calcSelect = document.getElementById('country-input');
+            const setSelect = document.getElementById('settings-country');
+            const currentCalcVal = calcSelect.value;
+            const currentSetVal = setSelect.value;
+
+            calcSelect.innerHTML = '';
+            setSelect.innerHTML = '';
+
+            Object.keys(PRICING).forEach(c => {
+                const opt1 = document.createElement('option');
+                opt1.value = c;
+                opt1.innerText = c;
+                calcSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = c;
+                opt2.innerText = c;
+                setSelect.appendChild(opt2);
+            });
+
+            if (currentCalcVal && PRICING[currentCalcVal]) calcSelect.value = currentCalcVal;
+            if (currentSetVal && PRICING[currentSetVal]) setSelect.value = currentSetVal;
+        }
+
+        function populateSettingsForm() {
+            const countrySelect = document.getElementById('settings-country');
+            if (countrySelect.options.length === 0) {
+                populateCountrySelects();
+            }
+            
+            const country = countrySelect.value;
+            const p = PRICING[country];
+            
+            const tiersContainer = document.getElementById('set-tiers-container');
+            const feesContainer = document.getElementById('set-fees-container');
+            const syriaCard = document.getElementById('syria-settings-card');
+            const syriaRatesContainer = document.getElementById('syria-rates-container');
+
+            if (country === 'Syria') {
+                syriaCard.style.display = 'block';
+                let syriaHtml = '';
+                Object.entries(SYRIA_RATES.cities).forEach(([city, rates], idx) => {
+                    syriaHtml += `
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="width: 120px; font-weight: 500; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${city}">${city}</div>
+                            <div class="input-group" style="margin-bottom:0; flex: 1;">
+                                <label>USD/SYP</label>
+                                <input type="number" id="syp-usd-${idx}" value="${rates.usdSyp}" step="0.5">
+                            </div>
+                            <div class="input-group" style="margin-bottom:0; flex: 1;">
+                                <label>CAD/SYP</label>
+                                <input type="number" id="syp-cad-${idx}" value="${rates.cadSyp}" step="0.1">
+                            </div>
+                        </div>
+                    `;
+                });
+                syriaRatesContainer.innerHTML = syriaHtml;
+            } else {
+                syriaCard.style.display = 'none';
+            }
+            
+            if (!p) {
+                document.getElementById('set-pctRate').value = '';
+                document.getElementById('set-usdPayPct').value = '';
+                document.getElementById('set-feePct').value = '';
+                tiersContainer.innerHTML = '<div style="font-size:12px; color:var(--c-text-muted)">Not configured</div>';
+                feesContainer.innerHTML = '';
+                return;
+            }
+
+            document.getElementById('set-pctRate').value = (p.pctRate * 100).toFixed(2).replace(/\.00$/, '');
+            document.getElementById('set-usdPayPct').value = (p.usdPayPct * 100).toFixed(2).replace(/\.00$/, '');
+            document.getElementById('set-feePct').value = (p.feePct * 100).toFixed(2).replace(/\.00$/, '');
+
+            let tiersHtml = '';
+            for (let i = 0; i < 3; i++) {
+                const t = p.tiers[i] || { max: '', add: '' };
+                tiersHtml += `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="input-group" style="margin-bottom:0">
+                            <input type="number" class="set-tier-max" placeholder="Max USD" value="${t.max}">
+                        </div>
+                        <div class="input-group" style="margin-bottom:0">
+                            <input type="number" class="set-tier-add" placeholder="Add CAD" value="${t.add}">
+                        </div>
+                    </div>
+                `;
+            }
+            tiersContainer.innerHTML = tiersHtml;
+
+            let feesHtml = '';
+            for (let i = 0; i < 4; i++) {
+                const f = p.fees[i] || { max: '', amount: '' };
+                feesHtml += `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="input-group" style="margin-bottom:0">
+                            <input type="number" class="set-fee-max" placeholder="Max USD" value="${f.max}">
+                        </div>
+                        <div class="input-group" style="margin-bottom:0">
+                            <input type="number" class="set-fee-amt" placeholder="Fee USD" value="${f.amount}">
+                        </div>
+                    </div>
+                `;
+            }
+            feesContainer.innerHTML = feesHtml;
+        }
+
+        function saveSyriaRates() {
+            let idx = 0;
+            Object.keys(SYRIA_RATES.cities).forEach(city => {
+                const usd = parseFloat(document.getElementById(`syp-usd-${idx}`).value);
+                const cad = parseFloat(document.getElementById(`syp-cad-${idx}`).value);
+                if (!isNaN(usd)) SYRIA_RATES.cities[city].usdSyp = usd;
+                if (!isNaN(cad)) SYRIA_RATES.cities[city].cadSyp = cad;
+                idx++;
+            });
+            localStorage.setItem('syria_rates', JSON.stringify(SYRIA_RATES));
+            const msg = document.getElementById('syria-settings-msg');
+            msg.innerText = "SYP Rates saved successfully!";
+            setTimeout(() => msg.innerText = "", 3000);
+            calculate();
+        }
+
+        function updateSyriaRatesToday() {
+            const today = new Date().toLocaleDateString('en-CA');
+            SYRIA_RATES.lastUpdated = today;
+            saveSyriaRates();
+            const msg = document.getElementById('syria-settings-msg');
+            msg.innerText = "Rates confirmed for today!";
+            setTimeout(() => msg.innerText = "", 3000);
+        }
+
+        function saveCountrySettings() {
+            const country = document.getElementById('settings-country').value;
+            if (!PRICING[country]) PRICING[country] = { tiers: [], fees: [] };
+            
+            const p = PRICING[country];
+            
+            const pctRate = parseFloat(document.getElementById('set-pctRate').value);
+            const usdPayPct = parseFloat(document.getElementById('set-usdPayPct').value);
+            const feePct = parseFloat(document.getElementById('set-feePct').value);
+            
+            if (!isNaN(pctRate)) p.pctRate = pctRate / 100;
+            if (!isNaN(usdPayPct)) p.usdPayPct = usdPayPct / 100;
+            if (!isNaN(feePct)) p.feePct = feePct / 100;
+            
+            const tierMaxEls = document.querySelectorAll('.set-tier-max');
+            const tierAddEls = document.querySelectorAll('.set-tier-add');
+            p.tiers = [];
+            for (let i = 0; i < tierMaxEls.length; i++) {
+                const max = parseFloat(tierMaxEls[i].value);
+                const add = parseFloat(tierAddEls[i].value);
+                if (!isNaN(max) && !isNaN(add)) {
+                    p.tiers.push({ max, add });
+                }
+            }
+            p.tiers.sort((a,b) => a.max - b.max);
+            
+            const feeMaxEls = document.querySelectorAll('.set-fee-max');
+            const feeAmtEls = document.querySelectorAll('.set-fee-amt');
+            p.fees = [];
+            for (let i = 0; i < feeMaxEls.length; i++) {
+                const max = parseFloat(feeMaxEls[i].value);
+                const amt = parseFloat(feeAmtEls[i].value);
+                if (!isNaN(max) && !isNaN(amt)) {
+                    p.fees.push({ max, amount: amt });
+                }
+            }
+            p.fees.sort((a,b) => a.max - b.max);
+            
+            localStorage.setItem('fx_pricing', JSON.stringify(PRICING));
+            
+            const msg = document.getElementById('settings-msg');
+            msg.innerText = "Settings saved successfully!";
+            setTimeout(() => msg.innerText = "", 3000);
+            
+            calculate();
+        }
+
+        function addNewCountry() {
+            const name = prompt("Enter new country name:");
+            if (!name || name.trim() === "") return;
+            const countryName = name.trim();
+            
+            if (PRICING[countryName]) {
+                alert("Country already exists!");
+                document.getElementById('settings-country').value = countryName;
+                populateSettingsForm();
+                return;
+            }
+            
+            // Create default template for new country
+            PRICING[countryName] = {
+                tiers: [],
+                pctRate: 0.03,
+                usdPayPct: 0.04,
+                fees: [],
+                feePct: 0.01
+            };
+            
+            populateCountrySelects();
+            document.getElementById('settings-country').value = countryName;
+            document.getElementById('country-input').value = countryName;
+            
+            populateSettingsForm();
+            saveCountrySettings();
+        }
+
+        function resetPricing() {
+            if(confirm("Are you sure you want to reset all rates to defaults?")) {
+                PRICING = JSON.parse(JSON.stringify(DEFAULT_PRICING));
+                localStorage.setItem('fx_pricing', JSON.stringify(PRICING));
+                populateSettingsForm();
+                const msg = document.getElementById('settings-msg');
+                msg.innerText = "Reset to defaults!";
+                setTimeout(() => msg.innerText = "", 3000);
+                calculate();
+            }
+        }
+
+        function fetchSpotRate() {
+            const note = document.getElementById('spot-rate-note');
+            const val = document.getElementById('spot-rate-value');
+            note.innerText = "Fetching from API...";
+            val.style.color = "var(--c-text)";
+            
+            fetch('https://open.er-api.com/v6/latest/USD')
+                .then(res => res.json())
+                .then(data => {
+                    const rate = data.rates.CAD;
+                    val.innerText = rate.toFixed(4);
+                    note.innerText = "Last updated: " + new Date(data.time_last_update_unix * 1000).toLocaleTimeString();
+                    val.style.color = "var(--c-blue)";
+                })
+                .catch(err => {
+                    note.innerText = "Error fetching live rate.";
+                    console.error(err);
+                });
+        }
+
+    </script>
+</body>
+</html>
