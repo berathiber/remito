@@ -3,181 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remittance Pricing Calculator</title>
+    <title>Remito — Transfer Pricing Desk</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314302B'/%3E%3Cpath d='M9 20 L16 9 L23 20' stroke='%23C4964B' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M9 20h14' stroke='%23C4964B' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Noto+Kufi+Arabic:wght@400;500;600&display=swap');
 
         :root {
-            --c-navy: #0B1628;
-            --c-cyan: #00C2FF;
-            --c-blue: #1D4ED8;
-            --c-teal: #0891B2;
-            --c-purple: #6D28D9;
-            --c-green: #15803D;
-            --c-green-bg: #F0FDF4;
-            --c-amber: #D97706;
-            --c-bg: #F1F4F8;
-            --c-white: #FFFFFF;
-            --c-text: #1F2937;
-            --c-text-muted: #6B7280;
-            --c-border: #E5E7EB;
-            --font-ui: 'DM Sans', sans-serif;
+            /* Token system — "exchange desk ledger" */
+            --ink: #14302B;
+            --ink-soft: #1D3F38;
+            --ink-line: rgba(255,255,255,0.09);
+            --brass: #C4964B;
+            --brass-deep: #A87A38;
+            --brass-tint: #F3E6CB;
+            --rust: #A6452E;
+            --rust-bg: #FBEAE5;
+            --forest: #3D6B52;
+            --forest-bg: #EAF2ED;
+            --sand: #EDE7D9;
+            --paper: #FCFAF5;
+            --line: #E1D8C4;
+            --text: #241F17;
+            --text-muted: #786E5F;
+            --text-faint: #A69B87;
+            --font-display: 'Fraunces', serif;
+            --font-ui: 'Inter', sans-serif;
+            --font-arabic: 'Noto Kufi Arabic', 'Inter', sans-serif;
             --font-num: 'DM Mono', monospace;
+            --radius: 10px;
+            /* Mode-accent colors, referenced directly by the calculation script */
+            --c-blue: #1D4ED8;
+            --c-purple: #6D28D9;
+            --c-teal: #0F766E;
+            --c-text-muted: var(--text-muted);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+
+        *:focus-visible {
+            outline: 2px solid var(--brass-deep);
+            outline-offset: 2px;
+        }
+
         body {
             font-family: var(--font-ui);
-            background-color: var(--c-bg);
-            color: var(--c-text);
+            background-color: var(--sand);
+            color: var(--text);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Sidebar */
+        /* ============ Sidebar ============ */
         .sidebar {
-            width: 240px;
-            background-color: var(--c-navy);
-            color: var(--c-white);
+            width: 252px;
+            background:
+                radial-gradient(circle at 15% 8%, rgba(196,150,75,0.10), transparent 45%),
+                var(--ink);
+            color: #F4EFE3;
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            padding: 24px;
+            padding: 26px 22px;
             z-index: 10;
+            position: relative;
         }
 
         .sidebar-header {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 40px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 11px;
+            margin-bottom: 6px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--ink-line);
         }
 
-        .sidebar-header svg {
-            color: var(--c-cyan);
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(155deg, var(--brass) 0%, var(--brass-deep) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+
+        .brand-wordmark {
+            font-family: var(--font-display);
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1;
+        }
+
+        .brand-sub {
+            font-size: 10.5px;
+            color: rgba(244,239,227,0.45);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 3px;
         }
 
         .sidebar-nav {
             display: flex;
             flex-direction: column;
             flex: 1;
+            padding-top: 20px;
+        }
+
+        .nav-eyebrow {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(244,239,227,0.35);
+            margin-bottom: 12px;
+            padding: 0 12px;
         }
 
         .nav-item {
             background: transparent;
             border: none;
-            color: rgba(255, 255, 255, 0.6);
+            border-left: 2px solid transparent;
+            color: rgba(244,239,227,0.62);
             width: 100%;
             text-align: left;
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 11px 12px 11px 14px;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 2px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 11px;
+            border-radius: 0 6px 6px 0;
         }
 
+        .nav-item svg { flex-shrink: 0; opacity: 0.8; }
+
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--c-white);
+            background: rgba(244,239,227,0.05);
+            color: #F4EFE3;
         }
 
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--c-white);
-            box-shadow: inset 0 0 0 1px rgba(0, 194, 255, 0.3);
+            background: rgba(196,150,75,0.12);
+            color: #F4EFE3;
+            border-left-color: var(--brass);
+        }
+
+        .nav-item.active svg { opacity: 1; color: var(--brass); }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--ink-line);
+            margin: 10px 12px 12px;
         }
 
         .mode-description {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 20px;
-            line-height: 1.5;
+            color: rgba(244,239,227,0.42);
+            margin-top: 16px;
+            padding: 0 12px;
+            line-height: 1.55;
         }
 
         .sidebar-footer {
             margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 18px;
+            border-top: 1px solid var(--ink-line);
+        }
+
+        .rate-label {
+            font-size: 10.5px;
+            color: rgba(244,239,227,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
         }
 
         .rate-readout {
             font-family: var(--font-num);
-            font-size: 14px;
-            color: var(--c-white);
+            font-size: 14.5px;
+            color: var(--brass-tint);
             display: flex;
             justify-content: space-between;
-        }
-        
-        .rate-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            margin-bottom: 4px;
+            align-items: center;
         }
 
-        /* Work Area */
+        .rate-readout::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brass);
+            margin-right: 8px;
+            box-shadow: 0 0 0 3px rgba(196,150,75,0.18);
+        }
+
+        /* ============ Work Area ============ */
         .work-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             height: 100%;
+            min-width: 0;
         }
 
         .topbar {
-            height: 64px;
-            background: var(--c-white);
-            border-bottom: 1px solid var(--c-border);
+            height: 72px;
+            background: var(--paper);
+            border-bottom: 1px solid var(--line);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 32px;
+            padding: 0 36px;
             flex-shrink: 0;
         }
 
+        .topbar-title-group { display: flex; flex-direction: column; }
+
+        .topbar-eyebrow {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            margin-bottom: 2px;
+        }
+
         .topbar-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--c-navy);
+            font-family: var(--font-display);
+            font-size: 23px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.01em;
         }
 
         .topbar-chip {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 4px 10px;
+            font-family: var(--font-num);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 7px 14px;
             border-radius: 99px;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .content-grid {
-            padding: 32px;
+            padding: 32px 36px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(280px, 380px) 1fr;
             gap: 24px;
             overflow: hidden;
             width: 100%;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 72px);
         }
 
         .settings-grid-layout {
-            padding: 32px;
+            padding: 32px 36px;
             display: grid;
             grid-template-columns: 1fr;
             gap: 24px;
             overflow-y: auto;
             width: 100%;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 72px);
             align-items: start;
         }
 
@@ -187,25 +283,25 @@
             }
         }
 
-        /* Cards */
+        /* ============ Cards ============ */
         .card {
-            background: var(--c-white);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--c-border);
+            background: var(--paper);
+            border-radius: var(--radius);
+            padding: 26px;
+            box-shadow: 0 1px 2px rgba(20,48,43,0.04);
+            border: 1px solid var(--line);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
 
         .card-header {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--c-navy);
-            margin-bottom: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 22px;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.09em;
             padding: 0;
             border: none;
         }
@@ -217,54 +313,70 @@
             padding: 0;
         }
 
-        /* Inputs */
+        /* ============ Inputs ============ */
         .input-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .input-group label {
             display: block;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
-            color: var(--c-text-muted);
-            margin-bottom: 6px;
+            color: var(--text-muted);
+            margin-bottom: 7px;
+            letter-spacing: 0.01em;
         }
 
         .input-group select,
         .input-group input {
             width: 100%;
-            padding: 10px 12px;
-            border: 1.5px solid var(--c-border);
-            border-radius: 8px;
+            padding: 11px 13px;
+            border: 1.5px solid var(--line);
+            border-radius: 7px;
+            background: var(--paper);
             font-family: var(--font-num);
-            font-size: 15px;
-            color: var(--c-text);
+            font-size: 14.5px;
+            color: var(--text);
             box-sizing: border-box;
-            transition: outline 0.2s, border-color 0.2s;
+            transition: border-color 0.15s, box-shadow 0.15s;
             outline: none;
         }
 
         .input-group select {
-            font-family: inherit;
+            font-family: var(--font-ui);
+        }
+
+        #syria-city-input {
+            font-family: var(--font-arabic);
+            direction: rtl;
+        }
+
+        #country-input:invalid {
+            color: var(--text-faint);
+        }
+
+        .input-group select option:disabled {
+            color: var(--text-faint);
         }
 
         .input-group select:focus,
         .input-group input:focus {
-            border-color: var(--c-cyan);
+            border-color: var(--brass-deep);
+            box-shadow: 0 0 0 3px rgba(196,150,75,0.14);
         }
 
         .input-group input:disabled {
-            background-color: var(--c-bg);
-            color: #9CA3AF;
+            background-color: var(--sand);
+            color: var(--text-faint);
             cursor: not-allowed;
         }
 
         .input-hint {
             font-size: 0.8rem;
-            color: var(--c-text-muted);
+            color: var(--text-muted);
         }
 
-        /* Results Layout */
+        /* ============ Results / Ticket ============ */
         .results-card .card-body {
             position: relative;
         }
@@ -272,46 +384,47 @@
         .state-layer {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--c-white);
+            background: var(--paper);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: #9CA3AF;
+            color: var(--text-faint);
             z-index: 2;
         }
 
         .state-layer svg {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
+            width: 42px;
+            height: 42px;
+            margin-bottom: 14px;
             color: currentColor;
         }
 
-        .state-layer h3 {
-            display: none;
-        }
+        .state-layer h3 { display: none; }
 
         .state-layer p {
-            font-size: 16px;
+            font-size: 14.5px;
             color: inherit;
+            max-width: 260px;
+            line-height: 1.5;
         }
 
         .error-layer {
             top: 0; bottom: auto;
-            background: #FEF2F2;
-            color: #DC2626;
-            padding: 12px;
+            background: var(--rust-bg);
+            color: var(--rust);
+            padding: 14px 16px;
             border-radius: 8px;
             font-size: 13px;
             text-align: center;
             height: auto;
             z-index: 3;
+            border: 1px solid rgba(166,69,46,0.15);
         }
-        
+
         .error-layer svg { display: none; }
-        .error-layer p { font-size: inherit; margin: 0; }
+        .error-layer p { font-size: inherit; margin: 0; max-width: none; }
 
         #results-content {
             display: flex;
@@ -320,111 +433,174 @@
             z-index: 1;
         }
 
-        .hero-block {
-            text-align: center;
-            padding: 16px 0;
-            border-bottom: 1px solid #F3F4F6;
-            margin-bottom: 20px;
-            background: transparent;
-            border-radius: 0;
+        /* Ticket stub — signature element */
+        .ticket-route {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: var(--font-num);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            padding-bottom: 18px;
         }
 
+        .ticket-route .dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--text-faint);
+        }
+
+        .hero-block {
+            text-align: center;
+            padding: 4px 0 20px;
+            border-bottom: 1px dashed var(--line);
+            margin-bottom: 22px;
+            background: transparent;
+            border-radius: 0;
+            position: relative;
+        }
+
+        .hero-block::before,
+        .hero-block::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--sand);
+            border: 1px solid var(--line);
+        }
+
+        .hero-block::before { left: -26px; }
+        .hero-block::after { right: -26px; }
+
         .hero-label {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
-            color: var(--c-text-muted);
-            margin-bottom: 8px;
-            text-transform: none;
-            letter-spacing: normal;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         .hero-value {
-            font-family: var(--font-num);
-            font-size: 40px;
-            font-weight: 500;
-            letter-spacing: -1px;
-            line-height: 1.2;
+            font-family: var(--font-display);
+            font-size: 42px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.15;
         }
 
         .hero-note {
             font-size: 12px;
-            color: var(--c-text-muted);
+            color: var(--text-muted);
             margin-top: 12px;
             display: inline-block;
-            background: transparent;
-            padding: 0;
-            font-style: italic;
+            background: var(--sand);
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-style: normal;
+            font-weight: 500;
         }
 
         .secondary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 0;
             margin-bottom: auto;
         }
 
         .sec-tile {
-            background: #F9FAFB;
-            padding: 16px;
-            border-radius: 8px;
+            background: transparent;
+            padding: 4px 18px;
+            border-radius: 0;
             border: none;
+            border-left: 1px solid var(--line);
         }
 
+        .sec-tile:first-child { border-left: none; padding-left: 0; }
+
         .sec-label {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
-            color: var(--c-text-muted);
+            color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 4px;
-            letter-spacing: normal;
+            margin-bottom: 6px;
+            letter-spacing: 0.06em;
         }
 
         .sec-value {
             font-family: var(--font-num);
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 500;
         }
 
         .profit-bar {
-            margin-top: 20px;
-            background: var(--c-green-bg);
-            color: var(--c-green);
+            margin-top: 22px;
+            background: var(--ink);
+            color: var(--brass-tint);
             border-radius: 8px;
             border: none;
-            padding: 16px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .profit-label {
-            font-weight: 600;
-            font-size: 16px;
-            color: inherit;
+            font-weight: 500;
+            font-size: 12.5px;
+            color: rgba(244,239,227,0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
         }
 
         .profit-value {
             font-family: var(--font-num);
             font-size: 16px;
-            color: inherit;
+            color: var(--brass-tint);
+            font-weight: 500;
         }
 
-        /* Animations */
+        /* ============ Animations ============ */
         @keyframes popIn {
             0% { opacity: 0; transform: translateY(4px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        .anim-value {
-            display: block;
-        }
+        .anim-value { display: block; }
 
         .anim-trigger {
             animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Responsive */
+        @media (prefers-reduced-motion: reduce) {
+            .anim-trigger { animation: none; }
+        }
+
+        /* ============ Settings buttons ============ */
+        .btn {
+            font-family: var(--font-ui);
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            padding: 12px;
+            transition: filter 0.15s, background 0.15s;
+        }
+        .btn:hover { filter: brightness(1.06); }
+        .btn-primary { background: var(--ink); color: #F4EFE3; }
+        .btn-brass { background: var(--brass); color: var(--ink); }
+        .btn-ghost { background: var(--sand); color: var(--text); border: 1px solid var(--line); }
+        .btn-teal-outline { background: var(--forest-bg); color: var(--forest); }
+
+        /* ============ Responsive ============ */
         @media (max-width: 900px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -448,40 +624,34 @@
             }
             .sidebar-header {
                 width: 100%;
-                margin-bottom: 16px;
+                margin-bottom: 12px;
+                padding-bottom: 12px;
             }
             .sidebar-nav {
                 flex-direction: row;
                 overflow-x: auto;
                 width: 100%;
-                gap: 8px;
+                gap: 6px;
+                padding-top: 4px;
             }
+            .nav-eyebrow { display: none; }
             .nav-item {
                 white-space: nowrap;
-                padding: 8px 16px;
-                border-radius: 4px 4px 0 0;
+                padding: 8px 14px;
+                border-radius: 6px;
+                border-left: none;
             }
             .nav-item.active {
-                box-shadow: inset 0 -3px 0 0 rgba(0, 194, 255, 1);
+                box-shadow: inset 0 -2px 0 0 var(--brass);
             }
-            .mode-description {
-                display: none;
-            }
-            .sidebar-footer {
-                display: none;
-            }
-            .content-grid, .settings-grid-layout {
-                padding: 16px;
-            }
-            .topbar {
-                padding: 16px;
-            }
-            .hero-value {
-                font-size: 2rem;
-            }
-            .secondary-grid {
-                grid-template-columns: 1fr;
-            }
+            .mode-description { display: none; }
+            .sidebar-footer { display: none; }
+            .content-grid, .settings-grid-layout { padding: 16px; }
+            .topbar { padding: 0 16px; }
+            .hero-value { font-size: 2rem; }
+            .secondary-grid { grid-template-columns: 1fr; }
+            .sec-tile { border-left: none; border-top: 1px solid var(--line); padding: 12px 0 0; }
+            .sec-tile:first-child { border-top: none; padding-top: 0; }
         }
     </style>
 </head>
@@ -489,25 +659,33 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--c-cyan)"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            FX Remito Pro
+            <div class="brand-mark">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14302B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15 L12 6 L18 15"/><path d="M6 15h12"/></svg>
+            </div>
+            <div>
+                <div class="brand-wordmark">Remito</div>
+                <div class="brand-sub">Transfer Desk</div>
+            </div>
         </div>
-        
+
         <nav class="sidebar-nav">
+            <div class="nav-eyebrow">Calculate</div>
             <button class="nav-item active" data-mode="1">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 Receive Amount
             </button>
             <button class="nav-item" data-mode="2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 Send Amount
             </button>
             <button class="nav-item" data-mode="3">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 USD Payment
             </button>
+            <div class="nav-divider"></div>
+            <div class="nav-eyebrow">Manage</div>
             <button class="nav-item" data-mode="4">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 Settings & Rates
             </button>
             <div class="mode-description" id="sidebar-desc">
@@ -523,20 +701,23 @@
 
     <main class="work-area">
         <header class="topbar">
-            <div class="topbar-title" id="topbar-title">Forward</div>
-            <div class="topbar-chip" id="topbar-chip" style="background: #DBEAFE; color: #1D4ED8;">USD to CAD</div>
+            <div class="topbar-title-group">
+                <div class="topbar-eyebrow">Pricing Mode</div>
+                <div class="topbar-title" id="topbar-title">Forward</div>
+            </div>
+            <div class="topbar-chip" id="topbar-chip" style="background: #E4ECF7; color: #2D4E8A;">USD to CAD</div>
         </header>
 
         <div class="content-grid" id="calc-grid">
-            
+
             <!-- Inputs Card -->
             <div class="card inputs-card">
                 <div class="card-header">Pricing Inputs</div>
                 <div class="card-body">
-                    
+
                     <div class="input-group">
                         <label for="country-input">Destination Country</label>
-                        <select id="country-input" onchange="toggleSyriaFields()">
+                        <select id="country-input" onchange="toggleSyriaFields()" required>
                         </select>
                     </div>
 
@@ -581,7 +762,7 @@
             <div class="card results-card">
                 <div class="card-header">Calculation Results</div>
                 <div class="card-body">
-                    
+
                     <!-- Empty State -->
                     <div class="state-layer" id="empty-state">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9h20"/></svg>
@@ -598,7 +779,15 @@
 
                     <!-- Live Results -->
                     <div id="results-content" style="display: none;">
-                        
+
+                        <div class="ticket-route">
+                            <span>Canada</span>
+                            <span class="dot"></span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                            <span class="dot"></span>
+                            <span id="ticket-destination">Corridor</span>
+                        </div>
+
                         <div class="hero-block">
                             <div class="hero-label" id="hero-label">Collect from Customer (CAD)</div>
                             <div class="hero-value anim-value" id="hero-value">--</div>
@@ -608,16 +797,21 @@
                         <div class="secondary-grid">
                             <div class="sec-tile" id="sec1-tile">
                                 <div class="sec-label" id="sec1-label">Beneficiary Receives</div>
-                                <div class="sec-value anim-value" id="sec1-value" style="color: var(--c-green)">--</div>
+                                <div class="sec-value anim-value" id="sec1-value" style="color: var(--forest)">--</div>
                             </div>
                             <div class="sec-tile" id="sec2-tile">
                                 <div class="sec-label" id="sec2-label">Agent Fee</div>
-                                <div class="sec-value anim-value" id="sec2-value" style="color: var(--c-amber)">--</div>
+                                <div class="sec-value anim-value" id="sec2-value" style="color: var(--brass-deep)">--</div>
                             </div>
                             <div class="sec-tile" id="sec3-tile" style="display: none;">
                                 <div class="sec-label" id="sec3-label">Customer Fee</div>
-                                <div class="sec-value anim-value" id="sec3-value" style="color: var(--c-blue)">--</div>
+                                <div class="sec-value anim-value" id="sec3-value" style="color: #2D4E8A">--</div>
                             </div>
+                        </div>
+
+                        <div class="profit-bar">
+                            <div class="profit-label">Your Margin</div>
+                            <div class="profit-value anim-value" id="profit-value">--</div>
                         </div>
 
                     </div>
@@ -631,27 +825,27 @@
                 <div class="card">
                     <div class="card-header">Live Market Data</div>
                     <div class="card-body">
-                        <div class="hero-block">
+                        <div class="hero-block" style="border-bottom: none; margin-bottom: 0;">
                             <div class="hero-label">CAD/USD Spot Rate (Market)</div>
-                            <div class="hero-value anim-value" id="spot-rate-value">--</div>
-                            <div class="hero-note" id="spot-rate-note">Fetching...</div>
+                            <div class="hero-value anim-value" id="spot-rate-value" style="font-size: 32px;">--</div>
+                            <div class="hero-note" id="spot-rate-note" style="display: inline-block;">Fetching...</div>
                         </div>
-                        <button style="width:100%; padding: 12px; background: var(--c-navy); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px;" onclick="fetchSpotRate()">Refresh Live Rate</button>
-                        <p style="font-size: 12px; color: var(--c-text-muted); text-align: center; margin-top: 12px;">Applies to calculations when you copy it to the rate input.</p>
+                        <button class="btn btn-primary" style="width:100%; margin-top: 20px;" onclick="fetchSpotRate()">Refresh Live Rate</button>
+                        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 12px;">Applies to calculations when you copy it to the rate input.</p>
                     </div>
                 </div>
 
                 <div class="card" id="syria-settings-card" style="display: none;">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                         Syria SYP Daily Rates
-                        <button style="padding: 6px 12px; background: var(--c-teal); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px;" onclick="updateSyriaRatesToday()">Update Today</button>
+                        <button class="btn btn-teal-outline" style="padding: 6px 12px; font-size: 12px;" onclick="updateSyriaRatesToday()">Update Today</button>
                     </div>
                     <div class="card-body" style="gap: 16px; padding-bottom: 24px;">
                         <div id="syria-rates-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
                         <div style="display: flex; gap: 12px; margin-top: 16px;">
-                            <button style="flex: 1; padding: 12px; background: var(--c-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="saveSyriaRates()">Save SYP Rates</button>
+                            <button class="btn btn-primary" style="flex: 1;" onclick="saveSyriaRates()">Save SYP Rates</button>
                         </div>
-                        <div id="syria-settings-msg" style="font-size: 12px; color: var(--c-green); text-align: center; font-weight: 600; min-height: 18px;"></div>
+                        <div id="syria-settings-msg" style="font-size: 12px; color: var(--forest); text-align: center; font-weight: 600; min-height: 18px;"></div>
                     </div>
                 </div>
             </div>
@@ -666,10 +860,10 @@
                             </select>
                         </div>
                         <div style="display: flex; align-items: flex-end;">
-                            <button style="padding: 12px; background: var(--c-cyan); color: var(--c-navy); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; height: 44px; display: flex; align-items: center;" onclick="addNewCountry()">+ Add</button>
+                            <button class="btn btn-brass" style="height: 46px; padding: 0 16px;" onclick="addNewCountry()">+ Add</button>
                         </div>
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
                         <div class="input-group" style="margin-bottom:0">
                             <label>Fwd/Rev %</label>
@@ -685,17 +879,17 @@
                         </div>
                     </div>
 
-                    <label style="font-size: 12px; font-weight: 600; color: var(--c-text-muted); margin-top: 4px; display: block;">Collection Tiers (Max USD → Add CAD)</label>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 4px; display: block;">Collection Tiers (Max USD → Add CAD)</label>
                     <div id="set-tiers-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
 
-                    <label style="font-size: 12px; font-weight: 600; color: var(--c-text-muted); margin-top: 4px; display: block;">Agent Fee Tiers (Max USD → Fee USD)</label>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 4px; display: block;">Agent Fee Tiers (Max USD → Fee USD)</label>
                     <div id="set-fees-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
 
                     <div style="display: flex; gap: 12px; margin-top: 16px;">
-                        <button style="flex: 1; padding: 12px; background: var(--c-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="saveCountrySettings()">Save Changes</button>
-                        <button style="flex: 1; padding: 12px; background: #F3F4F6; color: var(--c-text); border: 1px solid var(--c-border); border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="resetPricing()">Reset Default</button>
+                        <button class="btn btn-primary" style="flex: 1;" onclick="saveCountrySettings()">Save Changes</button>
+                        <button class="btn btn-ghost" style="flex: 1;" onclick="resetPricing()">Reset Default</button>
                     </div>
-                    <div id="settings-msg" style="font-size: 12px; color: var(--c-green); text-align: center; font-weight: 600; min-height: 18px;"></div>
+                    <div id="settings-msg" style="font-size: 12px; color: var(--forest); text-align: center; font-weight: 600; min-height: 18px;"></div>
                 </div>
             </div>
         </div>
@@ -821,6 +1015,14 @@
             return usdAmount * p.feePct;
         }
 
+        // Jordan uses fully custom conversion logic (see isJordan branches below) and has
+        // no PRICING entry (PRICING["Jordan"] is intentionally null), so it needs its own
+        // agent-fee tiers rather than going through agentFeeUSD.
+        function jordanAgentFeeUSD(usdAmount) {
+            if (usdAmount <= 2500) return 5;
+            return usdAmount * 0.002;
+        }
+
         function reverseUSD(country, cadAmount, rate) {
             let p = PRICING[country];
             if (!p) return null;
@@ -942,6 +1144,14 @@
             }
 
             // Check if configured
+            if (!country) {
+                emptyState.style.display = 'none';
+                errorState.style.display = 'flex';
+                resultsContent.style.display = 'none';
+                errorMsg.innerText = "Please select a destination country to begin.";
+                return;
+            }
+
             if (!PRICING[country] && !isSyriaSYP) {
                 emptyState.style.display = 'none';
                 errorState.style.display = 'flex';
@@ -1045,7 +1255,7 @@
                 let cadPaid = usdAmountRaw * rate;
                 cadPaid = Math.ceil(cadPaid);
 
-                fee = agentFeeUSD(country, usdAmountRaw);
+                fee = jordanAgentFeeUSD(usdAmountRaw);
                 profit = cadPaid - (usdNet * rate) - (fee * rate);
 
                 heroLabel = "Collect from Customer";
@@ -1081,7 +1291,7 @@
                 jodAmount = Math.ceil(jodAmount);
 
                 // Recalculate profit using exact JOD received
-                fee = agentFeeUSD(country, usdAmountRaw);
+                fee = jordanAgentFeeUSD(usdAmountRaw);
                 profit = cadPaid - ((jodAmount * 1.4135) * rate) - (fee * rate);
 
                 heroLabel = "Beneficiary Receives";
@@ -1097,7 +1307,7 @@
                 let usdAmountRaw = (usdNet <= 630) ? (usdNet + 20) : (usdNet * 1.03);
                 usdAmountRaw = Math.ceil(usdAmountRaw);
 
-                fee = agentFeeUSD(country, usdAmountRaw);
+                fee = jordanAgentFeeUSD(usdAmountRaw);
                 profit = usdAmountRaw - usdNet - fee;
 
                 heroLabel = "Collect from Customer";
@@ -1299,22 +1509,35 @@
         populateCountrySelects();
         setMode(1);
 
-        // Fetch TD High Rate on load
-        fetch('https://open.er-api.com/v6/latest/USD')
-            .then(res => res.json())
-            .then(data => {
-                const liveRate = data.rates.CAD;
+        // Fetch TD High Rate on load — tries a primary source, then a fallback, before giving up
+        function getUsdCadRate() {
+            return fetch('https://open.er-api.com/v6/latest/USD')
+                .then(res => { if (!res.ok) throw new Error('primary source unavailable'); return res.json(); })
+                .then(data => data.rates.CAD)
+                .catch(() => {
+                    // Fallback: European Central Bank reference rate via Frankfurter (no key, CORS-enabled)
+                    return fetch('https://api.frankfurter.app/latest?from=USD&to=CAD')
+                        .then(res => { if (!res.ok) throw new Error('fallback source unavailable'); return res.json(); })
+                        .then(data => data.rates.CAD);
+                });
+        }
+
+        getUsdCadRate()
+            .then(liveRate => {
                 const tdHighRate = liveRate + 0.03;
-                
+
                 document.getElementById('sidebar-rate').innerText = `1 USD = ${tdHighRate.toFixed(4)} CAD`;
-                
+
                 const rateInput = document.getElementById('rate-input');
                 if (!rateInput.value) {
                     rateInput.value = tdHighRate.toFixed(4);
                     calculate();
                 }
             })
-            .catch(err => console.error("Could not fetch live rate on load:", err));
+            .catch(err => {
+                console.error("Could not fetch live rate on load:", err);
+                document.getElementById('sidebar-rate').innerText = "Rate unavailable — enter manually";
+            });
 
         // --- Settings Logic ---
         function populateCountrySelects() {
@@ -1325,6 +1548,13 @@
 
             calcSelect.innerHTML = '';
             setSelect.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.innerText = 'Select a country…';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            calcSelect.appendChild(placeholder);
 
             Object.keys(PRICING).forEach(c => {
                 const opt1 = document.createElement('option');
@@ -1542,22 +1772,47 @@
             const note = document.getElementById('spot-rate-note');
             const val = document.getElementById('spot-rate-value');
             note.innerText = "Fetching from API...";
-            val.style.color = "var(--c-text)";
-            
-            fetch('https://open.er-api.com/v6/latest/USD')
-                .then(res => res.json())
-                .then(data => {
-                    const rate = data.rates.CAD;
+            val.style.color = "var(--text)";
+
+            getUsdCadRate()
+                .then(rate => {
                     val.innerText = rate.toFixed(4);
-                    note.innerText = "Last updated: " + new Date(data.time_last_update_unix * 1000).toLocaleTimeString();
-                    val.style.color = "var(--c-blue)";
+                    note.innerText = "Last updated: " + new Date().toLocaleTimeString();
+                    val.style.color = "var(--brass-deep)";
                 })
                 .catch(err => {
-                    note.innerText = "Error fetching live rate.";
+                    note.innerText = "Rate unavailable — check your connection, or enter the rate manually.";
+                    val.style.color = "var(--rust)";
                     console.error(err);
                 });
         }
 
+    </script>
+
+    <script>
+        // Cosmetic: keep the ticket route strip in sync with the selected corridor.
+        function updateTicketDestination() {
+            const el = document.getElementById('ticket-destination');
+            if (!el) return;
+            const country = document.getElementById('country-input').value || 'Corridor';
+            const syriaCurrencyContainer = document.getElementById('syria-currency-container');
+            if (country === 'Syria' && syriaCurrencyContainer.style.display !== 'none') {
+                const currency = document.getElementById('syria-currency-input').value;
+                if (currency === 'SYP') {
+                    const city = document.getElementById('syria-city-input').value;
+                    el.innerText = city ? ('Syria — ' + city) : 'Syria';
+                    return;
+                }
+            }
+            el.innerText = country;
+        }
+        ['country-input', 'syria-currency-input', 'syria-city-input', 'amount-input', 'rate-input'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateTicketDestination);
+            if (el) el.addEventListener('change', updateTicketDestination);
+        });
+        document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', updateTicketDestination));
+        updateTicketDestination();
     </script>
 </body>
 </html>
