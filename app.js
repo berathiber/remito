@@ -177,8 +177,14 @@
         }
 
         // --- Formatting & UI Helpers ---
+        // Round normally to the nearest cent. This replaces the previous Math.ceil()
+        // behavior, which always increased amounts to the next whole unit.
+        function roundToTwo(amount) {
+            return Math.round((amount + Number.EPSILON) * 100) / 100;
+        }
+
         function formatMoney(amount, currencyCode) {
-            const fractionDigits = currencyCode === 'SYP' ? 0 : 2;
+            const fractionDigits = 2;
             return currencyCode + ' ' + amount.toLocaleString('en-CA', { 
                 minimumFractionDigits: fractionDigits, 
                 maximumFractionDigits: fractionDigits 
@@ -375,7 +381,7 @@
                     if (cadNet < 500) {
                         customerFee = 10;
                     }
-                    let cadPaid = Math.ceil(cadNet + customerFee);
+                    let cadPaid = roundToTwo(cadNet + customerFee);
 
                     let agentUsd = sypReceived / cityRates.usdSyp;
                     fee = 5;
@@ -388,7 +394,7 @@
                     heroLabel = "Collect from Customer";
                     heroVal = formatMoney(cadPaid, 'CAD');
                     sec1Label = "Beneficiary Receives";
-                    sec1Val = sypReceived.toLocaleString('en-CA', { maximumFractionDigits: 0 }) + " SYP";
+                    sec1Val = sypReceived.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " SYP";
                     sec2Val = formatMoney(agentUsd + fee, 'USD');
                     sec2Label = "Pay Agent (USD)";
                     profitVal = formatMoney(profit, 'CAD');
@@ -408,7 +414,7 @@
                         return;
                     }
 
-                    let sypReceived = Math.floor(cadNet * cityRates.cadSyp);
+                    let sypReceived = roundToTwo(cadNet * cityRates.cadSyp);
                     let agentUsd = sypReceived / cityRates.usdSyp;
                     fee = 5;
                     customerFeeVal = customerFee;
@@ -417,7 +423,7 @@
                     profit = cadPaid - ((agentUsd + fee) * marketRate);
 
                     heroLabel = "Beneficiary Receives";
-                    heroVal = sypReceived.toLocaleString('en-CA', { maximumFractionDigits: 0 }) + " SYP";
+                    heroVal = sypReceived.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " SYP";
                     sec1Label = "Customer Pays";
                     sec1Val = formatMoney(cadPaid, 'CAD');
                     sec2Val = formatMoney(agentUsd + fee, 'USD');
@@ -433,7 +439,7 @@
                 let usdNet = jodAmount * jp.jodRate;
                 let usdAmountRaw = (usdNet <= jp.threshold) ? (usdNet + jp.flatFee) : (usdNet * (1 + jp.pctFee));
                 let cadPaid = usdAmountRaw * rate;
-                cadPaid = Math.ceil(cadPaid);
+                cadPaid = roundToTwo(cadPaid);
 
                 fee = agentFeeUSD(country, usdAmountRaw);
                 profit = cadPaid - (usdNet * rate) - (fee * rate);
@@ -469,7 +475,7 @@
                 }
 
                 let jodAmount = usdNet / jp.jodRate;
-                jodAmount = Math.ceil(jodAmount);
+                jodAmount = roundToTwo(jodAmount);
 
                 // Recalculate profit using exact JOD received
                 fee = agentFeeUSD(country, usdAmountRaw);
@@ -487,7 +493,7 @@
                 let jodAmount = amount;
                 let usdNet = jodAmount * jp.jodRate;
                 let usdAmountRaw = (usdNet <= jp.threshold) ? (usdNet + jp.flatFee) : (usdNet * (1 + jp.pctFee));
-                usdAmountRaw = Math.ceil(usdAmountRaw);
+                usdAmountRaw = roundToTwo(usdAmountRaw);
 
                 fee = agentFeeUSD(country, usdAmountRaw);
                 profit = usdAmountRaw - usdNet - fee;
@@ -523,7 +529,7 @@
                 }
 
                 let jodAmount = usdNet / jp.jodRate;
-                jodAmount = Math.ceil(jodAmount);
+                jodAmount = roundToTwo(jodAmount);
 
                 fee = agentFeeUSD(country, usdAmountRaw);
                 profit = usdPaid - (jodAmount * jp.jodRate) - fee;
@@ -538,7 +544,7 @@
             else if (currentMode === 1) { // Forward
                 let usdAmount = amount;
                 let collect = collectCAD(country, usdAmount, rate);
-                collect.val = Math.ceil(collect.val);
+                collect.val = roundToTwo(collect.val);
                 fee = agentFeeUSD(country, usdAmount);
                 profit = collect.val - (usdAmount * rate) - (fee * rate);
 
@@ -562,7 +568,7 @@
                     return;
                 }
 
-                usdAmount = Math.ceil(usdAmount);
+                usdAmount = roundToTwo(usdAmount);
 
                 fee = agentFeeUSD(country, usdAmount);
                 profit = cadPaid - (usdAmount * rate) - (fee * rate);
@@ -578,7 +584,7 @@
             else if (currentMode === 3) { // USD Payment
                 let usdAmount = amount;
                 let collect = collectUSD(country, usdAmount);
-                collect.val = Math.ceil(collect.val);
+                collect.val = roundToTwo(collect.val);
                 fee = agentFeeUSD(country, usdAmount);
                 profit = collect.val - usdAmount - fee;
 
@@ -602,7 +608,7 @@
                     return;
                 }
 
-                let usdAmount = Math.ceil(reverseResult.val);
+                let usdAmount = roundToTwo(reverseResult.val);
                 fee = agentFeeUSD(country, usdPaid);
                 profit = usdPaid - usdAmount - fee;
 
@@ -670,7 +676,7 @@
             }
             const recipientInputEl = document.getElementById('amount-input');
             const sendInputEl = document.getElementById('send-input');
-            const recipientDecimals = isSyriaSYP ? 0 : 2;
+            const recipientDecimals = 2;
 
             if (currentMode === 2 || currentMode === 5) {
                 const recipientRaw = extractNumber(heroVal);
