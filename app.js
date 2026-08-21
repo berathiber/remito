@@ -970,8 +970,8 @@
             if (status) {
                 status.classList.add('is-live');
                 status.innerText = cached
-                    ? `● Current saved rate · spot + 0.0300 · live refresh pending`
-                    : `● Live calculation rate · spot + 0.0300 · refreshed ${time}`;
+                    ? `● Current saved rate · spot + 0.03 · live refresh pending`
+                    : `● Live calculation rate · spot + 0.03 · refreshed ${time}`;
             }
 
             // Automatic updates continue unless the operator manually edited the rate.
