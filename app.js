@@ -48,7 +48,7 @@
             },
             "Gazah": {
                 tiers: [{ max: 800, add: 20 }],
-                pctRate: 0.025, usdPayPct: 0.035,
+                pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 1000, amount: 7 }],
                 feePct: 0.007
             },
@@ -60,7 +60,7 @@
             },
             "Turkey": {
                 tiers: [{ max: 800, add: 20 }],
-                pctRate: 0.025, usdPayPct: 0.035,
+                pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
@@ -72,7 +72,7 @@
             },
             "Egypt": {
                 tiers: [{ max: 500, add: 20 }],
-                pctRate: 0.04, usdPayPct: 0.05,
+                pctRate: 0.035, usdPayPct: 0.045,
                 fees: [{ max: 1000, amount: 7 }],
                 feePct: 0.007
             },
