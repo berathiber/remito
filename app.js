@@ -40,7 +40,7 @@
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
-            "Lebanon-Whish Money": {
+            "Lebanon (2)": {
                 tiers: [{ max: 700, add: 25 }],
                 pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }, { max: 1500, amount: 10 }, { max: 2000, amount: 12 }],
