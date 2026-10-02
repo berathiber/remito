@@ -29,31 +29,31 @@
 
         const DEFAULT_PRICING = {
             "Syria": {
-                tiers: [{ max: 400, add: 15 }, { max: 700, add: 20 }],
+                tiers: [{ max: 400, add: 15 }, { max: 800, add: 20 }],
                 pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }],
-                feePct: 0.007
+                feePct: 0.008
             },
             "Lebanon": {
-                tiers: [{ max: 650, add: 20 }],
+                tiers: [{ max: 800, add: 20 }],
                 pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
             "Lebanon (2)": {
-                tiers: [{ max: 700, add: 25 }],
+                tiers: [{ max: 850, add: 25 }],
                 pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }, { max: 1500, amount: 10 }, { max: 2000, amount: 12 }],
-                feePct: 0.007
+                feePct: 0.002
             },
             "Gazah": {
-                tiers: [{ max: 800, add: 20 }],
+                tiers: [{ max: 650, add: 20 }],
                 pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 1000, amount: 7 }],
                 feePct: 0.007
             },
             "Dafeh": {
-                tiers: [{ max: 650, add: 20 }],
+                tiers: [{ max: 800, add: 20 }],
                 pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 2500, amount: 10 }],
                 feePct: 0.004
@@ -65,20 +65,20 @@
                 feePct: 0.002
             },
             "Iraq": {
-                tiers: [{ max: 800, add: 20 }],
+                tiers: [{ max: 1000, add: 20 }],
                 pctRate: 0.02, usdPayPct: 0.03,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
             "Egypt": {
-                tiers: [{ max: 500, add: 20 }],
+                tiers: [{ max: 650, add: 20 }],
                 pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 1000, amount: 7 }],
                 feePct: 0.007
             },
             "Jordan": {
                 jodRate: 1.4135,
-                threshold: 630,
+                threshold: 800,
                 flatFee: 20,
                 pctFee: 0.025,
                 tiers: [],
