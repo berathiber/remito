@@ -76,6 +76,7 @@
         pctRate: 0.03, usdPayPct: 0.04,
         fees: [{ max: 1000, amount: 7 }],
         feePct: 0.007
+    },
             "Jordan": {
                 jodRate: 1.4135,
                 threshold: 800,
