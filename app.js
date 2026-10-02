@@ -1060,8 +1060,8 @@
             if (status) {
                 status.classList.add('is-live');
                 status.innerText = cached
-                    ? `● Current saved rate · spot + 0.02 · live refresh pending`
-                    : `● Live calculation rate · spot + 0.02 · refreshed ${time}`;
+                    ? `● Current saved rate · spot + 0.03 · live refresh pending`
+                    : `● Live calculation rate · spot + 0.03 · refreshed ${time}`;
             }
 
             // Automatic updates continue unless the operator manually edited the rate.
@@ -1087,12 +1087,12 @@
 
             try {
                 const { rate: googleSpotRate } = await getUsdCadRate();
-                const calculationRate = googleSpotRate + 0.02;
+                const calculationRate = googleSpotRate + 0.03;
                 const fetchedAt = Date.now();
                 localStorage.setItem('last_google_usdcad', JSON.stringify({
                     spotRate: googleSpotRate,
                     calculationRate,
-                    spread: 0.02,
+                    spread: 0.03,
                     fetchedAt
                 }));
                 if (googleRateRetryTimer) {
