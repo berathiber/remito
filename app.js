@@ -30,19 +30,19 @@
         const DEFAULT_PRICING = {
             "Syria": {
                 tiers: [{ max: 400, add: 15 }, { max: 700, add: 20 }],
-                pctRate: 0.03, usdPayPct: 0.04,
+                pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }],
                 feePct: 0.007
             },
             "Lebanon": {
                 tiers: [{ max: 650, add: 20 }],
-                pctRate: 0.03, usdPayPct: 0.04,
+                pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
-            "Lebanon OMT": {
+            "Lebanon-Whish Money": {
                 tiers: [{ max: 700, add: 25 }],
-                pctRate: 0.035, usdPayPct: 0.045,
+                pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 300, amount: 5 }, { max: 999, amount: 7 }, { max: 1500, amount: 10 }, { max: 2000, amount: 12 }],
                 feePct: 0.007
             },
@@ -54,25 +54,25 @@
             },
             "Dafeh": {
                 tiers: [{ max: 650, add: 20 }],
-                pctRate: 0.03, usdPayPct: 0.04,
+                pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 2500, amount: 10 }],
                 feePct: 0.004
             },
             "Turkey": {
                 tiers: [{ max: 800, add: 20 }],
-                pctRate: 0.03, usdPayPct: 0.04,
+                pctRate: 0.025, usdPayPct: 0.035,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
             "Iraq": {
                 tiers: [{ max: 800, add: 20 }],
-                pctRate: 0.025, usdPayPct: 0.035,
+                pctRate: 0.02, usdPayPct: 0.03,
                 fees: [{ max: 2500, amount: 5 }],
                 feePct: 0.002
             },
             "Egypt": {
                 tiers: [{ max: 500, add: 20 }],
-                pctRate: 0.035, usdPayPct: 0.045,
+                pctRate: 0.03, usdPayPct: 0.04,
                 fees: [{ max: 1000, amount: 7 }],
                 feePct: 0.007
             },
@@ -80,7 +80,7 @@
                 jodRate: 1.4135,
                 threshold: 630,
                 flatFee: 20,
-                pctFee: 0.03,
+                pctFee: 0.025,
                 tiers: [],
                 pctRate: 0,
                 usdPayPct: 0,
@@ -1060,8 +1060,8 @@
             if (status) {
                 status.classList.add('is-live');
                 status.innerText = cached
-                    ? `● Current saved rate · spot + 0.0300 · live refresh pending`
-                    : `● Live calculation rate · spot + 0.0300 · refreshed ${time}`;
+                    ? `● Current saved rate · spot + 0.02 · live refresh pending`
+                    : `● Live calculation rate · spot + 0.02 · refreshed ${time}`;
             }
 
             // Automatic updates continue unless the operator manually edited the rate.
@@ -1087,12 +1087,12 @@
 
             try {
                 const { rate: googleSpotRate } = await getUsdCadRate();
-                const calculationRate = googleSpotRate + 0.03;
+                const calculationRate = googleSpotRate + 0.02;
                 const fetchedAt = Date.now();
                 localStorage.setItem('last_google_usdcad', JSON.stringify({
                     spotRate: googleSpotRate,
                     calculationRate,
-                    spread: 0.03,
+                    spread: 0.02,
                     fetchedAt
                 }));
                 if (googleRateRetryTimer) {
